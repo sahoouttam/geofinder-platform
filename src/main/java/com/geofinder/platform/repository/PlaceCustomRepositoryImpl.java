@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -105,6 +105,15 @@ public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
         UpdateResult updateResult = mongoTemplate.updateFirst(
                                 query, aggregationUpdate, Place.class);       
         return updateResult.getMatchedCount() > 0;   
+    }
+
+    @Override
+    public GeoResults<Place> findNearby(GeoJsonPoint geoJsonPoint, double radiusKm, int limit) {
+        NearQuery nearQuery = NearQuery.near(geoJsonPoint, Metrics.KILOMETERS)
+                    .maxDistance(new Distance(radiusKm, Metrics.KILOMETERS))
+                    .spherical(true)
+                    .limit(limit);
+        return mongoTemplate.geoNear(nearQuery, Place.class);
     }
 
     private List<String> normalize(List<String> tags) {

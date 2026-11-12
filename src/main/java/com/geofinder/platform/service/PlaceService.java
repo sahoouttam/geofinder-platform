@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.geofinder.platform.dto.request.CreatePlaceRequest;
 import com.geofinder.platform.dto.request.OperatingHoursRequest;
 import com.geofinder.platform.dto.request.TagUpdateRequest;
+import com.geofinder.platform.dto.response.NearbyPlace;
 import com.geofinder.platform.dto.response.PlaceResponse;
 import com.geofinder.platform.dto.response.PlaceSummaryResponse;
 import com.geofinder.platform.entity.OperatingHours;
@@ -97,5 +98,14 @@ public class PlaceService {
                             operatingHour.getOpenTime(), operatingHour.getCloseTime());
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<NearbyPlace> findNearby(double latitude, double longitude, double radiusKm, int limit) {
+        GeoJsonPoint geoJsonPoint = new GeoJsonPoint(longitude, latitude);
+        return placeRepository.findNearby(geoJsonPoint, radiusKm, limit)
+                                    .getContent()
+                                    .stream()
+                                    .map(NearbyPlace::from)
+                                    .collect(Collectors.toList());
     }
 }
