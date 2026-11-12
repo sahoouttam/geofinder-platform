@@ -7,7 +7,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 
 ## Tech stack
 
-- Java 17+, Spring Boot 3.3, Spring Web, Spring Validation
+- Java 21, Spring Boot 3.3.5, Spring Web, Spring Validation
 - Spring Data MongoDB (`MongoTemplate`, custom repository fragments)
 - MongoDB (local)
 - Lombok, Maven
