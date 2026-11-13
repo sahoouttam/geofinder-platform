@@ -15,6 +15,7 @@ import com.geofinder.platform.dto.response.NearbyPlace;
 import com.geofinder.platform.dto.response.ProductResponse;
 import com.geofinder.platform.dto.response.ProductSearchResponse;
 import com.geofinder.platform.entity.Product;
+import com.geofinder.platform.exception.PlaceNotFoundException;
 import com.geofinder.platform.repository.ProductRepository;
 
 @Service
@@ -65,6 +66,17 @@ public class ProductService {
                         .map(product -> ProductSearchResponse.of(
                             product, nearByPlaces.get(product.getPlaceId())))
                         .sorted(Comparator.comparingDouble(ProductSearchResponse::getDistanceKm))
+                        .collect(Collectors.toList());
+    }
+
+    public List<ProductResponse> findAllByPlace(String placeId, String category, 
+                                        Boolean veg, Boolean available, int limit) {
+        if (!placeService.exitsByPlaceId(placeId)) {
+            throw new PlaceNotFoundException(placeId);
+        }
+        return productRepository.findAllByPlace(placeId, category, veg, available, limit)
+                        .stream()
+                        .map(ProductResponse::from)
                         .collect(Collectors.toList());
     }
 }

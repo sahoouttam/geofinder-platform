@@ -108,4 +108,8 @@ public class PlaceService {
                                     .map(NearbyPlace::from)
                                     .collect(Collectors.toList());
     }
+
+    public boolean exitsByPlaceId(String placeId) {
+        return placeRepository.existsById(placeId);
+    }
 }

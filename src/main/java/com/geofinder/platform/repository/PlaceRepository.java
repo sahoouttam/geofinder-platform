@@ -8,4 +8,5 @@ import com.geofinder.platform.entity.Place;
 @Repository
 public interface PlaceRepository extends MongoRepository<Place, String>, PlaceCustomRepository {
     
+    boolean existsById(String id);
 }

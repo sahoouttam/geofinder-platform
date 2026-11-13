@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,18 @@ public class ProductController {
         List<ProductSearchResponse> productSearchResponses = productService
                     .searchNearbyProducts(text, latitude, longitude, radiusKm, limit);
         return new ResponseEntity<>(productSearchResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/places/{placeId}")
+    public ResponseEntity<List<ProductResponse>> searchAllByPlace(
+                        @PathVariable String placeId, 
+                        @RequestParam(required = false) String category, 
+                        @RequestParam(required = false) Boolean veg, 
+                        @RequestParam(required = false) Boolean available, 
+                        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        List<ProductResponse> productResponses = productService
+                    .findAllByPlace(placeId, category, veg, available, limit);
+        return new ResponseEntity<>(productResponses, HttpStatus.OK);
     }
     
 }

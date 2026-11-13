@@ -9,6 +9,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 
 - Java 21, Spring Boot 3.3.5, Spring Web, Spring Validation
 - Spring Data MongoDB (`MongoTemplate`, custom repository fragments)
+- springdoc-openapi (Swagger UI) for interactive API docs
 - MongoDB (local)
 - Lombok, Maven
 
@@ -34,6 +35,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 - Create a product for a place (`BigDecimal` price, unique name per place)
 - Full-text search over name, tags and description with relevance ranking (weights 5, 3, 1)
 - Text search restricted to places near a point: finds nearby places first, then their matching products, sorted by distance
+- List the products of a place with optional category, veg and availability filters (dynamic `Criteria`, sorted by category and name)
 
 **Cross-cutting**
 - Request validation and a global exception handler with a consistent JSON error body
@@ -56,6 +58,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 | POST | `/api/products` | Create a product |
 | GET | `/api/products/search?text=&limit=` | Full-text product search |
 | GET | `/api/products/search-nearby?text=&latitude=&longitude=&radiusKm=&limit=` | Product search near a point |
+| GET | `/api/products/places/{placeId}?category=&veg=&available=&limit=` | Products of a place, filters optional |
 
 Coordinates are always sent as `latitude` and `longitude`. In MongoDB they are stored GeoJSON-style as `[longitude, latitude]`.
 
@@ -93,7 +96,7 @@ spring.data.mongodb.auto-index-creation=true
 ./mvnw spring-boot:run
 ```
 
-The API starts on `http://localhost:8080`.
+The API starts on `http://localhost:8080`. Swagger UI: `http://localhost:8080/swagger-ui.html`.
 
 If a geo or text query fails with `IndexNotFound`, the index was not created. Check `auto-index-creation`, or create it manually:
 
@@ -104,26 +107,6 @@ db.products.createIndex(
   { name: "text", description: "text", tags: "text" },
   { weights: { name: 5, tags: 3, description: 1 }, name: "TextIndex" })
 ```
-
-## Roadmap
-
-| Status | Feature |
-|---|---|
-| ⬜ | Product list by place and availability update |
-| ⬜ | Place text search |
-| ⬜ | Open-now filter on nearby search (overnight hours and 24x7 places) |
-| ⬜ | Collections (favorites) with `$lookup` joins |
-| ⬜ | Search history with TTL index and trending aggregation |
-| ⬜ | Integration tests with Testcontainers |
-| ⬜ | Authentication |
-
-## Known limitations
-
-- Overlapping delivery zones of one place all match; there is no priority rule yet
-- Nearby and deliverable searches are separate endpoints
-- Distance is straight-line, not road distance
-- Ratings are a running average with no per-user review records
-- Pagination is limit-based only
 
 ---
 

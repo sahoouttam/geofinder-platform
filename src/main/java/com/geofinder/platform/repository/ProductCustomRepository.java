@@ -9,4 +9,7 @@ public interface ProductCustomRepository {
     List<Product> findByText(String text, int limit);
 
     List<Product> findAllByTextAndPlaceIds(String text, List<String> placeIds);
+
+    List<Product> findAllByPlace(String placeId, String category, 
+                                Boolean veg, Boolean available, int limit);
 }
