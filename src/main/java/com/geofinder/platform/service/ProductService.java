@@ -16,6 +16,7 @@ import com.geofinder.platform.dto.response.ProductResponse;
 import com.geofinder.platform.dto.response.ProductSearchResponse;
 import com.geofinder.platform.entity.Product;
 import com.geofinder.platform.exception.PlaceNotFoundException;
+import com.geofinder.platform.exception.ProductNotFoundException;
 import com.geofinder.platform.repository.ProductRepository;
 
 @Service
@@ -78,5 +79,11 @@ public class ProductService {
                         .stream()
                         .map(ProductResponse::from)
                         .collect(Collectors.toList());
+    }
+
+    public ProductResponse updateAvailability(String id, Boolean available) {
+        return productRepository.updateProductAvailability(id, available)
+                        .map(ProductResponse::from)
+                        .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }

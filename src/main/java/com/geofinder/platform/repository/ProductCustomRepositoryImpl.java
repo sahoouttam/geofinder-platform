@@ -1,13 +1,16 @@
 package com.geofinder.platform.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.core.query.TextQuery;
+import org.springframework.data.mongodb.core.query.Update;
 
 import com.geofinder.platform.entity.Product;
 
@@ -49,6 +52,18 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
                                 Sort.Order.asc("name")))
                             .limit(limit);
         return mongoTemplate.find(query, Product.class);
+    }
+
+    @Override
+    public Optional<Product> updateProductAvailability(String id, Boolean available) {
+        Query query = Query.query(Criteria.where("_id").is(id));
+        Update update = new Update().set("available", available)
+                                    .currentDate("updatedAt");
+        Product updatedProduct = mongoTemplate.findAndModify(
+                        query, update, 
+                        FindAndModifyOptions.options().returnNew(true),
+                        Product.class);
+        return Optional.ofNullable(updatedProduct);
     }
     
 }

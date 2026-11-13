@@ -8,4 +8,5 @@ import com.geofinder.platform.entity.Product;
 @Repository
 public interface ProductRepository extends MongoRepository<Product, String>, ProductCustomRepository {
     
+    boolean existsById(String id);
 }

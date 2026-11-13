@@ -103,9 +103,23 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFound(
+            ProductNotFoundException ex, HttpServletRequest request) {
+
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(PlaceUpdateException.class)
     public ResponseEntity<ErrorResponse> handlePlaceNotUpdate(
             PlaceUpdateException ex, HttpServletRequest request) {
+
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ProductUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotUpdate(
+            ProductUpdateException ex, HttpServletRequest request) {
 
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }

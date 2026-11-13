@@ -36,6 +36,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 - Full-text search over name, tags and description with relevance ranking (weights 5, 3, 1)
 - Text search restricted to places near a point: finds nearby places first, then their matching products, sorted by distance
 - List the products of a place with optional category, veg and availability filters (dynamic `Criteria`, sorted by category and name)
+- Mark a product available or unavailable (atomic `findAndModify` that returns the updated document)
 
 **Cross-cutting**
 - Request validation and a global exception handler with a consistent JSON error body
@@ -59,6 +60,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 | GET | `/api/products/search?text=&limit=` | Full-text product search |
 | GET | `/api/products/search-nearby?text=&latitude=&longitude=&radiusKm=&limit=` | Product search near a point |
 | GET | `/api/products/places/{placeId}?category=&veg=&available=&limit=` | Products of a place, filters optional |
+| PATCH | `/api/products/{id}/availability?available=` | Mark a product available or unavailable |
 
 Coordinates are always sent as `latitude` and `longitude`. In MongoDB they are stored GeoJSON-style as `[longitude, latitude]`.
 
