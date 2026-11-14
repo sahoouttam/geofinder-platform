@@ -25,6 +25,8 @@ import com.geofinder.platform.service.PlaceService;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME;
 
@@ -77,6 +79,13 @@ public class PlaceController {
     public ResponseEntity<List<PlaceResponse>> openAt(
             @RequestParam @DateTimeFormat(iso = DATE_TIME) LocalDateTime openAt) {
         List<PlaceResponse> placeResponses = placeService.findOpenAt(openAt);
+        return new ResponseEntity<>(placeResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PlaceResponse>> search(@RequestParam String text,
+                        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        List<PlaceResponse> placeResponses = placeService.searchPlaces(text, limit);
         return new ResponseEntity<>(placeResponses, HttpStatus.OK);
     }
 }

@@ -122,4 +122,11 @@ public class PlaceService {
                 .map(PlaceResponse::from)
                 .collect(Collectors.toList());
     }
+
+    public List<PlaceResponse> searchPlaces(String text, int limit) {
+        return placeRepository.findByText(text, limit)
+                        .stream()
+                        .map(PlaceResponse::from)
+                        .collect(Collectors.toList());
+    }
 }

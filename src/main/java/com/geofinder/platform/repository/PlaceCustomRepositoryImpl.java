@@ -27,6 +27,8 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.springframework.data.mongodb.core.query.TextQuery;
 import org.springframework.data.mongodb.core.query.Update;
 
 import com.geofinder.platform.dto.request.TagUpdateRequest;
@@ -132,6 +134,14 @@ public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
         Criteria criteria = openAtCriteria(openAt);
         Query query = Query.query(criteria);
         return mongoTemplate.find(query, Place.class);
+    }
+
+    @Override
+    public List<Place> findByText(String text, int limit) {
+        TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matchingAny(text);
+        TextQuery textQuery = TextQuery.queryText(textCriteria).sortByScore();
+        textQuery.limit(limit);
+        return mongoTemplate.find(textQuery, Place.class);
     }
 
     private Criteria openAtCriteria(LocalDateTime openAt) {

@@ -20,6 +20,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 - Add and remove tags in one request (`addToSet` and `pullAll`, tags normalized)
 - Atomic running-average rating update using an aggregation-pipeline update
 - Open-now search at any given time, including overnight shifts that run past midnight and 24x7 places (`$expr` with `$filter` and `$dateToString`)
+- Full-text place search over name, tags and description with relevance ranking (weights 5, 3, 1)
 
 **Delivery zones**
 - One place can have many zones (`GeoJsonPolygon`), each with a delivery fee and minimum order
@@ -50,6 +51,7 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 | POST | `/api/places` | Create a place |
 | GET | `/api/places/nearby?latitude=&longitude=&radiusKm=&placeType=&openAt=&limit=` | Nearby places, nearest first; `openAt` keeps only places open at that local date-time |
 | GET | `/api/places/open-now?at=` | Places open at the given local date-time (defaults to now, IST) |
+| GET | `/api/places/search?text=&limit=` | Full-text place search |
 | PATCH | `/api/places/{id}/tags` | Body: `{"add": [...], "remove": [...]}` |
 | PATCH | `/api/places/{id}/ratings?rating=` | Add a rating (1 to 5) |
 | POST | `/api/zones` | Create a delivery zone (`placeId`, `rings`, `minOrderValue`, `deliveryFee`) |

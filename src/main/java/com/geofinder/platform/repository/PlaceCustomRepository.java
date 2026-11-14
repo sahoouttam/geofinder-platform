@@ -23,4 +23,6 @@ public interface PlaceCustomRepository {
     GeoResults<Place> findNearby(GeoJsonPoint geoJsonPoint, double radiusKm, int limit);
 
     List<Place> findByOpenNow(LocalDateTime openAt);
+
+    List<Place> findByText(String text, int limit);
 }
