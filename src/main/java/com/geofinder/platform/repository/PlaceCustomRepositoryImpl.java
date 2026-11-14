@@ -1,6 +1,8 @@
 package com.geofinder.platform.repository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -10,9 +12,14 @@ import org.springframework.data.geo.Metrics;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationUpdate;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
+import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
+import org.springframework.data.mongodb.core.aggregation.DateOperators;
+import org.springframework.data.mongodb.core.aggregation.DateOperators.Timezone;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators.Add;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators.Divide;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators.Multiply;
@@ -33,10 +40,13 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.geoN
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
 
 public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
 
     private final MongoTemplate mongoTemplate;
+
+    private static final Timezone IST = Timezone.valueOf("Asia/Kolkata");
 
     public PlaceCustomRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
@@ -44,24 +54,25 @@ public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
 
     @Override
     public List<PlaceSummaryResponse> findNearby(GeoJsonPoint geoJsonPoint, double radiusKm, 
-                                    PlaceType placeType, int limit) {
-        NearQuery nearQuery = NearQuery.near(geoJsonPoint)
+                    PlaceType placeType, LocalDateTime openAt, int limit) {
+        NearQuery nearQuery = NearQuery.near(geoJsonPoint, Metrics.KILOMETERS)
                     .maxDistance(new Distance(radiusKm, Metrics.KILOMETERS))
                     .spherical(true); 
         if (placeType != null) {
             Criteria criteria = Criteria.where("placeType").is(placeType);
             nearQuery.query(Query.query(criteria));
         }
-        Aggregation aggregation = newAggregation(
-            geoNear(nearQuery, "distanceKm"),
-            limit(limit),
-            project("name", "placeType", "tags", "address",
+        List<AggregationOperation> operations = new ArrayList<>();
+        operations.add(geoNear(nearQuery, "distanceKm"));
+        if (openAt != null) operations.add(match(openAtCriteria(openAt)));
+        operations.add(limit(limit));
+        operations.add(project("name", "placeType", "tags", "address",
                     "rating", "ratingCount", "deliveryAvailable", "distanceKm")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("location.coordinates")
                         .elementAt(1)).as("latitude")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("location.coordinates")
                         .elementAt(0)).as("longitude"));
-        return mongoTemplate.aggregate(aggregation, Place.class, 
+        return mongoTemplate.aggregate(newAggregation(operations), Place.class, 
                         PlaceSummaryResponse.class).getMappedResults();
     }
 
@@ -114,6 +125,48 @@ public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
                     .spherical(true)
                     .limit(limit);
         return mongoTemplate.geoNear(nearQuery, Place.class);
+    }
+
+    @Override
+    public List<Place> findByOpenNow(LocalDateTime openAt) {
+        Criteria criteria = openAtCriteria(openAt);
+        Query query = Query.query(criteria);
+        return mongoTemplate.find(query, Place.class);
+    }
+
+    private Criteria openAtCriteria(LocalDateTime openAt) {
+        String today = openAt.getDayOfWeek().name();
+        String yesterday = openAt.minusDays(1).getDayOfWeek().name();
+        String time = openAt.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        AggregationExpression openedToday = BooleanOperators.And.and(
+            ComparisonOperators.valueOf("h.closed").equalToValue(false),
+            ComparisonOperators.valueOf("h.dayOfWeek").equalToValue(today),
+            ComparisonOperators.valueOf(hhmm("h.openTime")).lessThanEqualToValue(time),
+            BooleanOperators.Or.or(
+                    ComparisonOperators.valueOf("h.overnight").equalToValue(true),
+                    ComparisonOperators.valueOf(hhmm("h.closeTime")).greaterThanValue(time)));
+
+        AggregationExpression spillover = BooleanOperators.And.and(
+            ComparisonOperators.valueOf("h.closed").equalToValue(false),
+            ComparisonOperators.valueOf("h.dayOfWeek").equalToValue(yesterday),
+            ComparisonOperators.valueOf("h.overnight").equalToValue(true),
+            ComparisonOperators.valueOf(hhmm("h.closeTime")).greaterThanValue(time));
+
+        return Criteria.expr(
+                    BooleanOperators.Or.or(hasShift(openedToday), 
+                    hasShift(spillover)));
+    }
+
+    private AggregationExpression hhmm(String field) {
+        return DateOperators.dateOf(field).toString("%H:%M").withTimezone(IST);
+    }
+
+    private AggregationExpression hasShift(AggregationExpression condition) {
+        return ComparisonOperators.valueOf(
+            ArrayOperators.Size.lengthOfArray(
+                    ArrayOperators.Filter.filter("operatingHours").as("h").by(condition)))
+            .greaterThanValue(0);
     }
 
     private List<String> normalize(List<String> tags) {

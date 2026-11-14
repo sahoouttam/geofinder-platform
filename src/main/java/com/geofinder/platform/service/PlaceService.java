@@ -1,5 +1,7 @@
 package com.geofinder.platform.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,9 +71,9 @@ public class PlaceService {
     }
 
     public List<PlaceSummaryResponse> findNearbyPlaces(double latitude, double longitude, 
-                            double radiusKm, PlaceType placeType, int limit) {
+                double radiusKm, PlaceType placeType, LocalDateTime openAt, int limit) {
         GeoJsonPoint geoJsonPoint = new GeoJsonPoint(longitude, latitude); 
-        return placeRepository.findNearby(geoJsonPoint, radiusKm, placeType, limit);      
+        return placeRepository.findNearby(geoJsonPoint, radiusKm, placeType, openAt, limit);      
     }
 
     public Place findPlace(String id) {
@@ -111,5 +113,13 @@ public class PlaceService {
 
     public boolean exitsByPlaceId(String placeId) {
         return placeRepository.existsById(placeId);
+    }
+
+    public List<PlaceResponse> findOpenAt(LocalDateTime openAt) {
+        openAt = openAt == null ? LocalDateTime.now(ZoneId.of("Asia/Kolkata")) : openAt;
+        List<Place> places = placeRepository.findByOpenNow(openAt);
+        return places.stream()
+                .map(PlaceResponse::from)
+                .collect(Collectors.toList());
     }
 }

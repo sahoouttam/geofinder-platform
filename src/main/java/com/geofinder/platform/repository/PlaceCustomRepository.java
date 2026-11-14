@@ -1,5 +1,6 @@
 package com.geofinder.platform.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.geo.GeoResults;
@@ -13,11 +14,13 @@ import com.geofinder.platform.entity.PlaceType;
 public interface PlaceCustomRepository {
     
     List<PlaceSummaryResponse> findNearby(GeoJsonPoint geoJsonPoint, double radiusKm, 
-                                    PlaceType placeType, int limit);
+                    PlaceType placeType, LocalDateTime openAt, int limit);
 
     boolean updatePlaceTags(String id, TagUpdateRequest tagUpdateRequest);
 
     boolean updateRating(String id, double rating);
 
     GeoResults<Place> findNearby(GeoJsonPoint geoJsonPoint, double radiusKm, int limit);
+
+    List<Place> findByOpenNow(LocalDateTime openAt);
 }
