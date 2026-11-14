@@ -9,7 +9,6 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 
 - Java 21, Spring Boot 3.3.5, Spring Web, Spring Validation
 - Spring Data MongoDB (`MongoTemplate`, custom repository fragments)
-- springdoc-openapi (Swagger UI) for interactive API docs
 - MongoDB (local)
 - Lombok, Maven
 
@@ -17,9 +16,10 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 
 **Places**
 - Create a place with type, tags, address, location, operating hours and attributes
-- Nearby search with `geoNear`: radius in km, optional type filter, limit, distance returned in km
+- Nearby search with `geoNear`: radius in km, optional type filter, optional open-at-time filter, limit, distance returned in km
 - Add and remove tags in one request (`addToSet` and `pullAll`, tags normalized)
 - Atomic running-average rating update using an aggregation-pipeline update
+- Open-now search at any given time, including overnight shifts that run past midnight and 24x7 places (`$expr` with `$filter` and `$dateToString`)
 
 **Delivery zones**
 - One place can have many zones (`GeoJsonPolygon`), each with a delivery fee and minimum order
@@ -48,7 +48,8 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/places` | Create a place |
-| GET | `/api/places/nearby?latitude=&longitude=&radiusKm=&placeType=&limit=` | Nearby places, nearest first |
+| GET | `/api/places/nearby?latitude=&longitude=&radiusKm=&placeType=&openAt=&limit=` | Nearby places, nearest first; `openAt` keeps only places open at that local date-time |
+| GET | `/api/places/open-now?at=` | Places open at the given local date-time (defaults to now, IST) |
 | PATCH | `/api/places/{id}/tags` | Body: `{"add": [...], "remove": [...]}` |
 | PATCH | `/api/places/{id}/ratings?rating=` | Add a rating (1 to 5) |
 | POST | `/api/zones` | Create a delivery zone (`placeId`, `rings`, `minOrderValue`, `deliveryFee`) |
