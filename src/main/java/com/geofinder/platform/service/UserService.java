@@ -54,4 +54,8 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
+
+    public boolean exitsUser(String id) {
+        return userRepository.existsById(id);
+    }
 }

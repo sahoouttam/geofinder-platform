@@ -144,6 +144,12 @@ public class PlaceCustomRepositoryImpl implements PlaceCustomRepository {
         return mongoTemplate.find(textQuery, Place.class);
     }
 
+    @Override
+    public List<Place> findAllByIds(List<String> ids) {
+        Query query = Query.query(Criteria.where("_id").in(ids));
+        return mongoTemplate.find(query, Place.class);
+    }
+
     private Criteria openAtCriteria(LocalDateTime openAt) {
         String today = openAt.getDayOfWeek().name();
         String yesterday = openAt.minusDays(1).getDayOfWeek().name();

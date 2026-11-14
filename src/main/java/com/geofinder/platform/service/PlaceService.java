@@ -2,8 +2,12 @@ package com.geofinder.platform.service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,5 +132,20 @@ public class PlaceService {
                         .stream()
                         .map(PlaceResponse::from)
                         .collect(Collectors.toList());
+    }
+
+    public boolean placeExists(String placeId) {
+        return placeRepository.existsById(placeId);
+    }
+
+    public List<PlaceResponse> findAllPlacesByIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) return new ArrayList<>();
+        Map<String, Place> byId = placeRepository.findAllByIds(ids).stream()
+            .collect(Collectors.toMap(Place::getId, Function.identity()));
+        return ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .map(PlaceResponse::from)
+                .collect(Collectors.toList());
     }
 }

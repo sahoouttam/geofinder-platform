@@ -110,6 +110,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(PlaceCollectionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCollectionNotFound(
+            PlaceCollectionNotFoundException ex, HttpServletRequest request) {
+
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(PlaceUpdateException.class)
     public ResponseEntity<ErrorResponse> handlePlaceNotUpdate(
             PlaceUpdateException ex, HttpServletRequest request) {

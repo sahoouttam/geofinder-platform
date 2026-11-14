@@ -25,4 +25,6 @@ public interface PlaceCustomRepository {
     List<Place> findByOpenNow(LocalDateTime openAt);
 
     List<Place> findByText(String text, int limit);
+
+    List<Place> findAllByIds(List<String> ids);
 }

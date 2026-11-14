@@ -39,6 +39,11 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 - List the products of a place with optional category, veg and availability filters (dynamic `Criteria`, sorted by category and name)
 - Mark a product available or unavailable (atomic `findAndModify` that returns the updated document)
 
+**Collections (saved places)**
+- Create named collections per user (unique name per user)
+- Add and remove places atomically with `addToSet` and `pull`; adding twice is a no-op
+- Get a collection with its places in one batched `$in` query, in the order they were saved; places that were deleted are skipped
+
 **Cross-cutting**
 - Request validation and a global exception handler with a consistent JSON error body
 - `LocalTime` stored as `"HH:mm"` strings through custom converters
@@ -64,6 +69,10 @@ The project is a hands-on way to learn advanced `MongoTemplate` usage: geospatia
 | GET | `/api/products/search-nearby?text=&latitude=&longitude=&radiusKm=&limit=` | Product search near a point |
 | GET | `/api/products/places/{placeId}?category=&veg=&available=&limit=` | Products of a place, filters optional |
 | PATCH | `/api/products/{id}/availability?available=` | Mark a product available or unavailable |
+| POST | `/api/collections` | Create a collection (`userId`, `name`) |
+| PUT | `/api/collections/{id}/places/{placeId}` | Add a place to a collection |
+| DELETE | `/api/collections/{id}/places/{placeId}` | Remove a place from a collection |
+| GET | `/api/collections/{id}` | Collection with its places |
 
 Coordinates are always sent as `latitude` and `longitude`. In MongoDB they are stored GeoJSON-style as `[longitude, latitude]`.
 
@@ -75,6 +84,7 @@ Coordinates are always sent as `latitude` and `longitude`. In MongoDB they are s
 | `delivery_zones` | `placeId` (one place to many zones), `GeoJsonPolygon area` with a `2dsphere` index |
 | `users` | Unique `email`, `homeLocation`, `workLocation` |
 | `products` | `placeId`, text index on name, tags and description, unique `(placeId, name)` |
+| `place_collections` | `userId`, `name`, ordered `placeIds` array, unique `(userId, name)` |
 
 ## Design decisions
 

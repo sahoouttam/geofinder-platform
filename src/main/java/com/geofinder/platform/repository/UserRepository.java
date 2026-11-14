@@ -8,4 +8,5 @@ import com.geofinder.platform.entity.User;
 @Repository
 public interface UserRepository extends MongoRepository<User, String>, UserCustomRepository {
     
+
 }
